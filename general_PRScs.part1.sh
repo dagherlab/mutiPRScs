@@ -28,7 +28,7 @@ chr=$chr
 module load StdEnv/2020 scipy-stack/2020a python/3.8.10 gcc/9.3.0 hdf5/1.12.1
 ## under /home/liulang/runs/lang/software/PRScs
 ### run the following before your run PRScs
-N_THREADS=20
+N_THREADS=1
 export MKL_NUM_THREADS=$N_THREADS
 export NUMEXPR_NUM_THREADS=$N_THREADS
 export OMP_NUM_THREADS=$N_THREADS

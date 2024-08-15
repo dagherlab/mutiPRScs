@@ -9,11 +9,11 @@ option=${8:-1} # default option for running the first part (pst and sscores)
 # if 2, thats calculate the final score
 
 if [[ "$core" == 1 ]];then 
-resource="-c 20 --mem=20g -t 5:0:0"
+resource="-c 1 --mem=20g -t 3:0:0"
 elif [[ "$core" == 2 ]]; then 
-resource="-c 20 --mem=30g -t 6:0:0"
+resource="-c 1 --mem=30g -t 5:0:0"
 elif [[ "$core" == 3 ]]; then 
-resource="-c 20 --mem=40g -t 7:0:0"
+resource="-c 1 --mem=40g -t 7:0:0"
 fi
 
 
