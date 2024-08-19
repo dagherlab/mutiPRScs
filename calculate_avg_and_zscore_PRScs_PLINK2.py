@@ -8,15 +8,16 @@ import os
 def calculate_zscored_average(input_dir, file_prefix, output_dir,by_chr):
     scores = []
     if not by_chr:# whene there are 22 files
-        condition = len(scores) == 22
         for chr_num in range(1, 23):
-            file_name = f"{file_prefix}.chr{chr_num}.txt"
+            file_name = f"{file_prefix}.chr{chr_num}.sscore"
             file_path = os.path.join(input_dir, file_name)
             if os.path.exists(file_path):
                 df = pd.read_csv(file_path, sep='\t')
                 scores.append(df.iloc[:, -1])  # Assumes SCORE1_AVG is always the last column
             else:
                 print(f"File {file_name} does not exist. Skipping...")
+                condition=False
+        condition = len(scores) == 22
     else:
         condition = True
         file_name = f"{file_prefix}.txt"
@@ -31,7 +32,7 @@ def calculate_zscored_average(input_dir, file_prefix, output_dir,by_chr):
         zscored_avg_score = (avg_score - avg_score.mean()) / avg_score.std()
 
         # Assuming FID and IID are the same across all files and taking them from the last read file
-        result = df[['FID', 'IID']].copy()
+        result = df[['#FID', 'IID']].copy()
         result['PRScs_z'] = zscored_avg_score
 
         output_file = os.path.join(output_dir, f"{file_prefix}_zscored.csv")
@@ -39,9 +40,9 @@ def calculate_zscored_average(input_dir, file_prefix, output_dir,by_chr):
         print(f"Output saved to {output_file}")
     else:
         print("we are missing scores.")
-
+        sys.exit(1)
 if __name__ == "__main__":
-    if len(sys.argv) <= 3:
+    if len(sys.argv) < 4:
         print("Usage: python script.py <input_dir> <file_prefix> <output_dir>")
         sys.exit(1)
     
@@ -50,6 +51,7 @@ if __name__ == "__main__":
     output_dir = sys.argv[3]
     by_chr_default = False
     by_chr = by_chr_default
-    if len(sys.argv) > 3:
+    if len(sys.argv) > 4:
         by_chr = sys.argv[4]
     calculate_zscored_average(input_dir, file_prefix, output_dir,by_chr)
+    print("great! you are all done for this")

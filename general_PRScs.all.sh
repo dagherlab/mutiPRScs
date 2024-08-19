@@ -1,3 +1,6 @@
+# salloc -c 1 --mem=2g -t 3:0:0 --account=def-grouleau
+
+
 bfile=$1 #bfile is chromosomal plink file prefix, use # to represent chr number (ex, PING_chr#.qc)
 out=$2 # for the posterior effect size files
 out_final=$3
@@ -46,13 +49,16 @@ while true; do
     if [ ! -f "$file" ]; then
       echo "$file not found, please resubmit them to part 1"
       all_files_present=false
+      answer=yes
     fi
   done
 
   if $all_files_present; then
      echo "All files found, running the next program."
+     break
   else
-     exit 42
+    break 
+    #  exit 42
   fi
 done
 
@@ -87,6 +93,7 @@ if [[ "$answer" == "yes" ]]; then
   exit 42
 else
   module load scipy-stack/2020a python/3.8.10
+  echo "calculating final"
   python /home/liulang/liulang/PRS/scripts/calculate_avg_and_zscore_PRScs_PLINK2.py ${out}/scores/ ${name} ${out_final}
 fi 
 
