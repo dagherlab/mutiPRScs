@@ -13,6 +13,8 @@ the output folder will be like
              - csv file
          - out
              - out files
+         - sumstats
+             - temporary sumstat file (they are duplicated)
     - region 2
 
 *make sure you perform some QC on your base and target file*
@@ -35,23 +37,60 @@ otherwise, they will detect the file and skip the step**
 **ABCD**
 ```bash
 
-script=/lustre06/project/6001220/liulang/PRS/scripts/general_PRScs.all.sh # script dir
-cohort=ABCD # cohort name, it will create a folder in the destination folder
-out2=/home/liulang/scratch/genotype/ABCD/topmed/PRScs # directory to your bfiles
-bfile="${out2}/${cohort}_chr#_noalleles.QC" # bfile name, use # to represent chr number 
-SUM_STATS_FILE_dir=/home/liulang/scratch/project_MR_topmed/GWAS_NM_abnormal_pos_unstrict/ # directory for sumstat file (sumstat file from PLINK output)
-SUM_STATS_FILE_PRScs_outdir=/home/liulang/scratch/project_PRS/sumstats/GWAS_NM_abnormal_pos_unstrict # directory for processed sumstat
-pheno_file=/lustre06/project/6006490/liulang/project_MR_topmed/GWAS_NM_abnormal/data/pheno_pos_unstrict.txt # phenotypes. it will be iterated to submit jobs
-OR=FALSE # whether the sumstat comes with OR column
+script=/lustre06/project/6001220/liulang/PRS/scripts/general_PRScs.all.sh
+cohort=ABCD
+out2=/home/liulang/scratch/genotype/ABCD/topmed/PRScs
+bfile="${out2}/${cohort}_chr#_noalleles.QC"
+SUM_STATS_FILE_dir=/home/liulang/scratch/project_MR_topmed/GWAS_NM_abnormal_pos_unstrict/
+pheno_file=/lustre06/project/6006490/liulang/project_MR_topmed/GWAS_NM_abnormal/data/pheno_pos_unstrict.txt
+OR=FALSE
 for name in $(cat $pheno_file);do 
     echo $name;
     out=/home/liulang/scratch/tmp/${cohort}/${name}/
     out_final=/home/liulang/scratch/tmp/${cohort}/${name}/final_score
     SUM_STATS_FILE=${SUM_STATS_FILE_dir}/${name}.${name}.new.rsid.glm.logistic
-    SAMPLE_SIZE=$(sed -n '2p' $SUM_STATS_FILE | cut -f9)
-    echo "$SAMPLE_SIZE"
     core=1
     option=1
-    bash $script $bfile $out $out_final $name $SAMPLE_SIZE $SUM_STATS_FILE $SUM_STATS_FILE_PRScs_outdir $core $option $OR
+    bash $script $bfile $out $out_final $name $SUM_STATS_FILE $core $option $OR
 done
+
+
+
+# generate final scores
+salloc -c 1 --mem=2g -t 3:0:0 --account=def-grouleau
+script=/lustre06/project/6001220/liulang/PRS/scripts/general_PRScs.all.sh
+cohort=ABCD
+out2=/home/liulang/scratch/genotype/ABCD/topmed/PRScs
+bfile="${out2}/${cohort}_chr#_noalleles.QC"
+SUM_STATS_FILE_dir=/home/liulang/scratch/project_MR_topmed/GWAS_NM_abnormal_pos_unstrict/
+pheno_file=/lustre06/project/6006490/liulang/project_MR_topmed/GWAS_NM_abnormal/data/pheno_pos_unstrict.txt
+for name in $(cat /lustre06/project/6006490/liulang/project_MR_topmed/GWAS_NM_abnormal/data/pheno_pos_unstrict.txt);do 
+    echo $name;
+        out=/home/liulang/scratch/tmp/${cohort}/${name}/
+        out_final=/home/liulang/scratch/tmp/${cohort}/${name}/final_score
+        SUM_STATS_FILE=${SUM_STATS_FILE_dir}/${name}.${name}.new.rsid.glm.logistic
+        core=1
+        option=2
+        bash $script $bfile $out $out_final $name $SUM_STATS_FILE $core $option $OR
+done
+
+
+
+# collect all final scores
+cohort=ABCD
+out=../results/${cohort}/
+mkdir -p $out
+for region in /home/liulang/scratch/tmp/${cohort}/*;do 
+    if [ -d $region ];then 
+        name=$(basename $region)
+        echo "$name"
+        file=${region}/final_score/${name}_zscored.csv
+        if [ ! -f $file ];then 
+            echo "the file doesnt exist"
+            continue
+        fi 
+        cp $file ${out}
+    fi
+done
+
 ```

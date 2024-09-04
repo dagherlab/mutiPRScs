@@ -44,14 +44,16 @@
 
 file=$1
 out=$2
-OR=${3:-"TRUE"}
+chr=$3
+OR=${4:-"TRUE"}
 
 # assume the input sumstat ends with new.rsid.glm.linear
 name=$(basename $file)
+name=${name}_chr${chr}
 # check if the header contains A2, if not, make it
 if ! head -n 1 "$file" | grep -q "\bA2\b"; then
-echo "there is no A2 in the file, generating now....."
-awk "BEGIN {OFS=\"\t\"} NR==1 {print \$0, \"A2\"; next} {A2 = (\$6 == \$4) ? \$5 : \$4; print \$0, A2;}" $file > ${file}.temp && mv ${file}.temp ${file}
+    echo "there is no A2 in the file, generating now....."
+    awk "BEGIN {OFS=\"\t\"} NR==1 {print \$0, \"A2\"; next} {A2 = (\$6 == \$4) ? \$5 : \$4; print \$0, A2;}" $file > ${file}.temp && mv ${file}.temp ${file}
 fi 
 
 # if [[ ! -f ${out}/$name.PRScs ]];then 

@@ -5,13 +5,11 @@ bfile=$1 #bfile is chromosomal plink file prefix, use # to represent chr number 
 out=$2 # for the posterior effect size files
 out_final=$3
 name=$4
-SAMPLE_SIZE=$5
-SUM_STATS_FILE=$6 # the sumstat file from plink. it will be processed and the resulting processed sumstat file need have the columns SNP A1 A2 BETA P/SNP A1 A2 BETA SE/SNP A1 A2 OR P/SNP A1 A2 OR SE, and remove SNP with invalud values (empty, NA, inf, special symbols)
-SUM_STATS_FILE_PRScs_outdir=$7 # the outdir for SUM_STATS_FILE_PRScs for process_sumstat.sh
-core=${8:-1} # default resource, see below, choose 3 for UKB.
-option=${9:-1} # default option for running the first part (pst and sscores)
+SUM_STATS_FILE=$5 # the sumstat file from plink. it will be processed and the resulting processed sumstat file need have the columns SNP A1 A2 BETA P/SNP A1 A2 BETA SE/SNP A1 A2 OR P/SNP A1 A2 OR SE, and remove SNP with invalud values (empty, NA, inf, special symbols)
+core=${6:-1} # default resource, see below, choose 3 for UKB.
+option=${7:-1} # default option for running the first part (pst and sscores)
 # if 2, thats calculate the final score
-OR=${10:-"TRUE"}
+OR=${8:-"TRUE"}
 
 # uncomment the following commands when debugging
 # echo "listing arguments"
@@ -19,7 +17,6 @@ OR=${10:-"TRUE"}
 # echo "output directory to all files ${out}"
 # echo "output directory to final files ${out_final}"
 # echo "name of the folder/output ${name}"
-# echo "SAMPLE_SIZE of GWAS summary stat ${SAMPLE_SIZE}"
 # echo "SUM_STATS_FILE before processing and CS ${SUM_STATS_FILE}"
 # echo "SUM_STATS_FILE_PRScs_outdir directory for processed sumstat ${SUM_STATS_FILE_PRScs_outdir}"
 # echo "resource option we are gonna use ${core}"
@@ -67,10 +64,8 @@ fi
 if [[ -z $bfile ]]; then echo "ERROR: bfile (1st arg) not specified"; exit 42; fi
 if [[ -z $out ]]; then echo "ERROR: out directory (2nd arg) not specified"; exit 42; fi
 if [[ -z $name ]]; then echo "ERROR: name for output file(3rd arg) not specified"; exit 42; fi
-if [[ -z $SAMPLE_SIZE ]]; then echo "ERROR: SAMPLE_SIZE for GWAS (5th arg) not specified"; exit 42; fi
 if [[ -z $SUM_STATS_FILE ]]; then echo "ERROR: SUM_STATS_FILE (6th arg) not specified"; exit 42; fi
 if [[ ! -f $SUM_STATS_FILE ]]; then echo "ERROR: SUM_STATS_FILE $SUM_STATS_FILE does not EXIST"; exit 42; fi
-if [[ -z $SUM_STATS_FILE_PRScs_outdir ]]; then echo "ERROR: out directory (7th arg) not specified"; exit 42; fi
 
 mkdir -p $out/effect_size
 mkdir -p $out/scores 
@@ -116,7 +111,7 @@ if [[ "$answer" == "yes" ]]; then
     if [[ ! -f ${bfile_prefix}.bim ]]; then echo "ERROR: bfile ${bfile_prefix}.bim does not EXIST"; exit 42; fi
     if [[ ! -f ${out}/scores/${name}.chr${chr}.sscore ]];then 
       echo "$bfile_prefix is being calculated"
-      command="bash /home/liulang/liulang/PRS/scripts/general_PRScs.sh ${bfile_prefix} ${out} ${name} ${chr} $SAMPLE_SIZE $SUM_STATS_FILE $SUM_STATS_FILE_PRScs_outdir $OR"
+      command="bash /home/liulang/liulang/PRS/scripts/general_PRScs.sh ${bfile_prefix} ${out} ${name} ${chr} $SUM_STATS_FILE $OR"
       #echo $command
       jobs=$(squeue -u $USER | tail -n +2 | wc -l) # count the number of jobs
       if [[ $jobs < 999 ]];then 
@@ -127,8 +122,8 @@ if [[ "$answer" == "yes" ]]; then
           echo "we've reached the job submission quota, sleeping for an hour"
           sleep 1h
       fi
-      # srun $resource --account=rrg-adagher bash /home/liulang/liulang/PRS/scripts/general_PRScs.sh ${bfile_prefix} ${out} ${name} ${chr} $SAMPLE_SIZE $SUM_STATS_FILE
-      # bash /home/liulang/liulang/PRS/scripts/general_PRScs.sh ${bfile_prefix} ${out} ${name} ${chr} $SAMPLE_SIZE $SUM_STATS_FILE
+      # srun $resource --account=rrg-adagher bash /home/liulang/liulang/PRS/scripts/general_PRScs.sh ${bfile_prefix} ${out} ${name} ${chr} $SUM_STATS_FILE
+      # bash /home/liulang/liulang/PRS/scripts/general_PRScs.sh ${bfile_prefix} ${out} ${name} ${chr} $SUM_STATS_FILE
       # sleep 3h
     else
       echo "skipping chr $chr because it has been calculated"
