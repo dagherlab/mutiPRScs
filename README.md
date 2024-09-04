@@ -28,17 +28,30 @@ core represents how much resource you are requesting, core 1 is the lowest, ther
 option = 1 is for weight and chromosomal scores calculation
 option = 2 is for final score calculation
 
-script=/lustre06/project/6001220/liulang/PRS/scripts/general_PRScs.all.sh
-# ABCD
-cohort=ABCD
-out2=/home/liulang/scratch/genotype/ABCD/topmed/PRScs
-bfile="${out2}/${cohort}_chr#_noalleles.QC"
-name=accumb_diff
-out=/home/liulang/scratch/tmp/${cohort}/${name}/
-out_final=/home/liulang/scratch/tmp/${cohort}/${name}/final_score
-SAMPLE_SIZE=4523 
-SUM_STATS_FILE=/home/liulang/scratch/project_PRS/sumstats/asymmetry/accumb_diff.accumb_diff.new.rsid.glm.linear.PRScs
-core=1
-option=1
+**there is no force overlap option here. remove output if you wanna redo everything**
+otherwise, they will detect the file and skip the step**
+# USAGE
 
-bash $script $bfile $out $out_final $name $SAMPLE_SIZE $SUM_STATS_FILE $core $option
+**ABCD**
+```bash
+
+script=/lustre06/project/6001220/liulang/PRS/scripts/general_PRScs.all.sh # script dir
+cohort=ABCD # cohort name, it will create a folder in the destination folder
+out2=/home/liulang/scratch/genotype/ABCD/topmed/PRScs # directory to your bfiles
+bfile="${out2}/${cohort}_chr#_noalleles.QC" # bfile name, use # to represent chr number 
+SUM_STATS_FILE_dir=/home/liulang/scratch/project_MR_topmed/GWAS_NM_abnormal_pos_unstrict/ # directory for sumstat file (sumstat file from PLINK output)
+SUM_STATS_FILE_PRScs_outdir=/home/liulang/scratch/project_PRS/sumstats/GWAS_NM_abnormal_pos_unstrict # directory for processed sumstat
+pheno_file=/lustre06/project/6006490/liulang/project_MR_topmed/GWAS_NM_abnormal/data/pheno_pos_unstrict.txt # phenotypes. it will be iterated to submit jobs
+OR=FALSE # whether the sumstat comes with OR column
+for name in $(cat $pheno_file);do 
+    echo $name;
+    out=/home/liulang/scratch/tmp/${cohort}/${name}/
+    out_final=/home/liulang/scratch/tmp/${cohort}/${name}/final_score
+    SUM_STATS_FILE=${SUM_STATS_FILE_dir}/${name}.${name}.new.rsid.glm.logistic
+    SAMPLE_SIZE=$(sed -n '2p' $SUM_STATS_FILE | cut -f9)
+    echo "$SAMPLE_SIZE"
+    core=1
+    option=1
+    bash $script $bfile $out $out_final $name $SAMPLE_SIZE $SUM_STATS_FILE $SUM_STATS_FILE_PRScs_outdir $core $option $OR
+done
+```

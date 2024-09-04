@@ -48,9 +48,15 @@ OR=${3:-"TRUE"}
 
 # assume the input sumstat ends with new.rsid.glm.linear
 name=$(basename $file)
+# check if the header contains A2, if not, make it
+if ! head -n 1 "$file" | grep -q "\bA2\b"; then
+echo "there is no A2 in the file, generating now....."
+awk "BEGIN {OFS=\"\t\"} NR==1 {print \$0, \"A2\"; next} {A2 = (\$6 == \$4) ? \$5 : \$4; print \$0, A2;}" $file > ${file}.temp && mv ${file}.temp ${file}
+fi 
+
 # if [[ ! -f ${out}/$name.PRScs ]];then 
     mkdir -p $out
-    awk -F'\t' 'BEGIN {OFS="\t"} {print $3, $6, $4, $10, $13}' $file > ${out}/$name.temp1
+    awk -F'\t' 'BEGIN {OFS="\t"} {print $3, $6, $14, $10, $13}' $file > ${out}/$name.temp1
     if [ "$OR" = "TRUE" ];then
         new_header="SNP\tA1\tA2\tOR\tP"
     else
