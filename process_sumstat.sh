@@ -58,10 +58,11 @@ fi
 
 # if [[ ! -f ${out}/$name.PRScs ]];then 
     mkdir -p $out
-    awk -F'\t' 'BEGIN {OFS="\t"} {print $3, $6, $14, $10, $13}' $file > ${out}/$name.temp1
     if [ "$OR" = "TRUE" ];then
+        awk -F'\t' 'BEGIN {OFS="\t"} {print $3, $6, $14, $10, $13}' $file > ${out}/$name.temp1
         new_header="SNP\tA1\tA2\tOR\tP"
     else
+        awk -F'\t' 'BEGIN {OFS="\t"} {print $3, $6, $15, $10, $13}' $file > ${out}/$name.temp1
         new_header="SNP\tA1\tA2\tBETA\tP"
     fi
     # rename columns

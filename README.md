@@ -44,17 +44,15 @@ bfile="${out2}/${cohort}_chr#_noalleles.QC"
 SUM_STATS_FILE_dir=/home/liulang/scratch/project_MR_topmed/GWAS_NM_abnormal_pos_unstrict/
 pheno_file=/lustre06/project/6006490/liulang/project_MR_topmed/GWAS_NM_abnormal/data/pheno_pos_unstrict.txt
 OR=FALSE
+core=1
+option=1
 for name in $(cat $pheno_file);do 
     echo $name;
     out=/home/liulang/scratch/tmp/${cohort}/${name}/
     out_final=/home/liulang/scratch/tmp/${cohort}/${name}/final_score
     SUM_STATS_FILE=${SUM_STATS_FILE_dir}/${name}.${name}.new.rsid.glm.logistic
-    core=1
-    option=1
     bash $script $bfile $out $out_final $name $SUM_STATS_FILE $core $option $OR
 done
-
-
 
 # generate final scores
 salloc -c 1 --mem=2g -t 3:0:0 --account=def-grouleau
@@ -64,14 +62,15 @@ out2=/home/liulang/scratch/genotype/ABCD/topmed/PRScs
 bfile="${out2}/${cohort}_chr#_noalleles.QC"
 SUM_STATS_FILE_dir=/home/liulang/scratch/project_MR_topmed/GWAS_NM_abnormal_pos_unstrict/
 pheno_file=/lustre06/project/6006490/liulang/project_MR_topmed/GWAS_NM_abnormal/data/pheno_pos_unstrict.txt
+core=1
+option=2
+
 for name in $(cat /lustre06/project/6006490/liulang/project_MR_topmed/GWAS_NM_abnormal/data/pheno_pos_unstrict.txt);do 
     echo $name;
-        out=/home/liulang/scratch/tmp/${cohort}/${name}/
-        out_final=/home/liulang/scratch/tmp/${cohort}/${name}/final_score
-        SUM_STATS_FILE=${SUM_STATS_FILE_dir}/${name}.${name}.new.rsid.glm.logistic
-        core=1
-        option=2
-        bash $script $bfile $out $out_final $name $SUM_STATS_FILE $core $option $OR
+    out=/home/liulang/scratch/tmp/${cohort}/${name}/
+    out_final=/home/liulang/scratch/tmp/${cohort}/${name}/final_score
+    SUM_STATS_FILE=${SUM_STATS_FILE_dir}/${name}.${name}.new.rsid.glm.logistic
+    bash $script $bfile $out $out_final $name $SUM_STATS_FILE $core $option $OR
 done
 
 

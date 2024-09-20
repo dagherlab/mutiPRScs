@@ -97,6 +97,9 @@ while true; do
      echo "All files found, running the next program."
      break
   else
+    # increase the resource for failed jobs
+    echo "changing the resource for failed jobs. but this works for small cohorts only, increase the resource here when you are working with UKB"
+    resource="-c 3 --mem=30g -t 2:30:0"
     break 
     #  exit 42
   fi
