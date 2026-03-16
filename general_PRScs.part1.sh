@@ -33,9 +33,9 @@ export MKL_NUM_THREADS=$N_THREADS
 export NUMEXPR_NUM_THREADS=$N_THREADS
 export OMP_NUM_THREADS=$N_THREADS
 ### default flag
-PATH_TO_REFERENCE="/home/liulang/liulang/reference/ldblk_1kg_eur";
+PATH_TO_REFERENCE="/home/liulang/lang/reference/ldblk_1kg_eur";
 VALIDATION_BIM_PREFIX=$bfile_prefix
-SCRIPT_DIR=/home/liulang/liulang/software/PRScs
+SCRIPT_DIR=/home/liulang/runs/lang/software/PRScs
 GWAS_SAMPLE_SIZE=$SAMPLE_SIZE;
 
 

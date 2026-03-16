@@ -6,10 +6,12 @@ out=$2 # for the posterior effect size files
 out_final=$3
 name=$4
 SUM_STATS_FILE=$5 # the sumstat file from plink. it will be processed and the resulting processed sumstat file need have the columns SNP A1 A2 BETA P/SNP A1 A2 BETA SE/SNP A1 A2 OR P/SNP A1 A2 OR SE, and remove SNP with invalud values (empty, NA, inf, special symbols)
-core=${6:-1} # default resource, see below, choose 3 for UKB.
-option=${7:-1} # default option for running the first part (pst and sscores)
+SAMPLE_SIZE=$6
+
+core=${7:-1} # default resource, see below, choose 3 for UKB.
+option=${8:-1} # default option for running the first part (pst and sscores)
 # if 2, thats calculate the final score
-OR=${8:-"TRUE"}
+
 
 # uncomment the following commands when debugging
 # echo "listing arguments"
@@ -53,11 +55,11 @@ OR=${8:-"TRUE"}
 
 
 if [[ "$core" == 1 ]];then 
-resource="-c 1 --mem=20g -t 1:30:0"
+resource="-c 1 --mem=20g -t 1:20:0"
 elif [[ "$core" == 2 ]]; then 
-resource="-c 1 --mem=30g -t 4:0:0"
+resource="-c 1 --mem=30g -t 2:0:0"
 elif [[ "$core" == 3 ]]; then 
-resource="-c 1 --mem=40g -t 7:0:0"
+resource="-c 1 --mem=40g -t 2:30:0"
 fi
 
 
@@ -114,16 +116,16 @@ if [[ "$answer" == "yes" ]]; then
     if [[ ! -f ${bfile_prefix}.bim ]]; then echo "ERROR: bfile ${bfile_prefix}.bim does not EXIST"; exit 42; fi
     if [[ ! -f ${out}/scores/${name}.chr${chr}.sscore ]];then 
       echo "$bfile_prefix is being calculated"
-      command="bash /home/liulang/liulang/PRS/scripts/general_PRScs.sh ${bfile_prefix} ${out} ${name} ${chr} $SUM_STATS_FILE $OR"
+      command="bash /home/liulang/runs/lang/scripts/mutiPRScs/general_PRScs.sh ${bfile_prefix} ${out} ${name} ${chr} $SUM_STATS_FILE $SAMPLE_SIZE"
       #echo $command
       jobs=$(squeue -u $USER | tail -n +2 | wc -l) # count the number of jobs
-      if [[ $jobs < 999 ]];then 
+      if [[ $jobs -lt 50 ]];then 
         # rrg-adagher
-        sbatch $resource --wrap "$command" --account=def-grouleau --out ${out}/out/${name}_chr${chr}.out --job-name=${name}_chr${chr};
+        sbatch $resource --wrap "$command" --account=rrg-adagher --out ${out}/out/${name}_chr${chr}.out --job-name=${name}_chr${chr};
         ((chr++))
       else
-          echo "we've reached the job submission quota, sleeping for an hour"
-          sleep 1h
+          echo "we've reached the job submission quota, sleeping for half hour"
+          sleep 30m
       fi
       # srun $resource --account=rrg-adagher bash /home/liulang/liulang/PRS/scripts/general_PRScs.sh ${bfile_prefix} ${out} ${name} ${chr} $SUM_STATS_FILE
       # bash /home/liulang/liulang/PRS/scripts/general_PRScs.sh ${bfile_prefix} ${out} ${name} ${chr} $SUM_STATS_FILE
@@ -136,10 +138,10 @@ if [[ "$answer" == "yes" ]]; then
   echo "part 1 done for sbatch submission, please wait and run part 2 later"
   exit 42
 else
-  module load scipy-stack/2020a python/3.8.10
+  module load scipy-stack/2023b python/3.10.13
   echo "calculating final"
   if [ ! -f ${out_final}/${name}_zscored.csv ];then 
-    python /home/liulang/liulang/PRS/scripts/calculate_avg_and_zscore_PRScs_PLINK2.py ${out}/scores/ ${name} ${out_final}
+    python /home/liulang/runs/lang/scripts/mutiPRScs/calculate_avg_and_zscore_PRScs_PLINK2.py ${out}/scores/ ${name} ${out_final}
   else 
     echo "the file exists"
   fi 
